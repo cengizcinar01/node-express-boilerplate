@@ -4,8 +4,7 @@ const { SECRET } = require("../constants");
 const db = require("../db");
 
 const cookieExtractor = function (req) {
-  let token = null;
-  if (req && req.cookies) token = req.cookies["token"];
+  const token = req && req.cookies ? req.cookies["token"] : null;
   return token;
 };
 
@@ -18,20 +17,22 @@ passport.use(
   new Strategy(opts, async ({ id }, done) => {
     try {
       const { rows } = await db.query(
-        "SELECT user_id, email FROM users WHERE user_id = $1",
+        "SELECT user_id AS id, email FROM users WHERE user_id = $1",
         [id]
       );
 
       if (!rows.length) {
-        throw new Error("401 not authorized");
+        return done(null, false, { message: "401 not authorized" });
       }
 
-      let user = { id: rows[0].user_id, email: rows[0].email };
+      const user = { id: rows[0].id, email: rows[0].email };
 
-      return await done(null, user);
+      return done(null, user);
     } catch (error) {
-      console.log(error.message);
-      done(null, false);
+      console.error(error.message);
+      return done(error, false);
     }
   })
 );
+
+module.exports = passport;
