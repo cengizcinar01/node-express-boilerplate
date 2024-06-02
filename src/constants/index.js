@@ -1,9 +1,18 @@
 const { config } = require("dotenv");
+const { cleanEnv, str, port } = require("envalid");
+
 config();
 
+const env = cleanEnv(process.env, {
+  PORT: port({ default: 8000 }),
+  SERVER_URL: str({ default: "http://localhost:8000" }),
+  CLIENT_URL: str(),
+  SECRET: str(),
+});
+
 module.exports = {
-  PORT: process.env.PORT,
-  SERVER_URL: process.env.SERVER_URL,
-  CLIENT_URL: process.env.CLIENT_URL,
-  SECRET: process.env.SECRET,
+  PORT: env.PORT,
+  SERVER_URL: env.SERVER_URL,
+  CLIENT_URL: env.CLIENT_URL,
+  SECRET: env.SECRET,
 };
