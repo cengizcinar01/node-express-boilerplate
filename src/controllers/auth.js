@@ -5,14 +5,16 @@ const { SECRET } = require("../constants");
 
 exports.getUsers = async (req, res) => {
   try {
-    const { rows } = await db.query("select user_id, email from users");
-
+    const { rows } = await db.query("SELECT user_id, email FROM users");
     return res.status(200).json({
       success: true,
       users: rows,
     });
   } catch (error) {
-    console.log(error.message);
+    console.error(error.message);
+    return res.status(500).json({
+      error: error.message,
+    });
   }
 };
 
@@ -20,18 +22,16 @@ exports.register = async (req, res) => {
   const { email, password } = req.body;
   try {
     const hashedPassword = await hash(password, 10);
-
-    await db.query("insert into users(email,password) values ($1, $2)", [
+    await db.query("INSERT INTO users(email, password) VALUES ($1, $2)", [
       email,
       hashedPassword,
     ]);
-
     return res.status(201).json({
       success: true,
       message: "The registration was successful",
     });
   } catch (error) {
-    console.log(error.message);
+    console.error(error.message);
     return res.status(500).json({
       error: error.message,
     });
@@ -39,9 +39,8 @@ exports.register = async (req, res) => {
 };
 
 exports.login = async (req, res) => {
-  let user = req.user;
-
-  let payload = {
+  const user = req.user;
+  const payload = {
     id: user.user_id,
     email: user.email,
   };
@@ -52,7 +51,7 @@ exports.login = async (req, res) => {
       message: "Logged in successfully",
     });
   } catch (error) {
-    console.log(error.message);
+    console.error(error.message);
     return res.status(500).json({
       error: error.message,
     });
@@ -65,7 +64,10 @@ exports.protected = async (req, res) => {
       info: "protected info",
     });
   } catch (error) {
-    console.log(error.message);
+    console.error(error.message);
+    return res.status(500).json({
+      error: error.message,
+    });
   }
 };
 
@@ -76,7 +78,7 @@ exports.logout = async (req, res) => {
       message: "Logged out successfully",
     });
   } catch (error) {
-    console.log(error.message);
+    console.error(error.message);
     return res.status(500).json({
       error: error.message,
     });
