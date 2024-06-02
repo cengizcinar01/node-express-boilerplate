@@ -4,23 +4,54 @@ const { PORT, CLIENT_URL } = require("./constants");
 const cookieParser = require("cookie-parser");
 const passport = require("passport");
 const cors = require("cors");
+require("dotenv").config();
 
-//import passport middleware
+// Import passport middleware
 require("./middlewares/passport-middleware");
 
-//initialize middlewares
+// CORS configuration
+const corsOptions = {
+  origin: process.env.NODE_ENV === "development" ? "*" : CLIENT_URL,
+  credentials: true,
+};
+
+app.use(cors(corsOptions));
+
+// Health Check Route
+app.get("/health", (req, res) => {
+  res.sendStatus(200);
+});
+
+// Middleware to check Referer header
+app.use((req, res, next) => {
+  if (req.path === "/health") {
+    return next();
+  }
+  if (process.env.NODE_ENV === "development") {
+    return next();
+  }
+  const referer = req.headers.referer;
+  if (referer && referer.startsWith(CLIENT_URL)) {
+    // Request from allowed URL
+    next();
+  } else {
+    // Request from disallowed URL
+    res.status(403).send("Access denied");
+  }
+});
+
+// Initialize middlewares
 app.use(express.json());
 app.use(cookieParser());
-app.use(cors({ origin: CLIENT_URL, credentials: true }));
 app.use(passport.initialize());
 
-//import routes
+// Import routes
 const authRoutes = require("./routes/auth");
 
-//initialize routes
+// Initialize routes
 app.use("/api", authRoutes);
 
-//app start
+// App start
 const appStart = () => {
   try {
     app.listen(PORT, () => {
