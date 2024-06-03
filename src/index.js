@@ -10,12 +10,12 @@ require("dotenv").config();
 require("./middlewares/passport-middleware");
 
 // CORS configuration
-const corsOptions = {
-  origin: process.env.NODE_ENV === "development" ? "*" : CLIENT_URL,
-  credentials: true,
-};
-
-app.use(cors(corsOptions));
+app.use(
+  cors({
+    origin: CLIENT_URL,
+    credentials: true,
+  })
+);
 
 // Health Check Route
 app.get("/health", (req, res) => {
@@ -24,9 +24,6 @@ app.get("/health", (req, res) => {
 
 // Middleware to check Referer header
 app.use((req, res, next) => {
-  if (req.path === "/health") {
-    return next();
-  }
   if (process.env.NODE_ENV === "development") {
     return next();
   }
