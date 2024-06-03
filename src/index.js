@@ -10,12 +10,12 @@ require("dotenv").config();
 require("./middlewares/passport-middleware");
 
 // CORS configuration
-app.use(
-  cors({
-    origin: CLIENT_URL,
-    credentials: true,
-  })
-);
+const corsOptions = {
+  origin: CLIENT_URL,
+  credentials: true,
+};
+
+app.use(cors(corsOptions));
 
 // Health Check Route
 app.get("/health", (req, res) => {
